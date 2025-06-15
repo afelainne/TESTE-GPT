@@ -23,11 +23,11 @@ export function ImageSizeSlider({ imageSize, onSizeChange }: ImageSizeSliderProp
   return (
     <div className="flex items-center gap-3">
       {/* Size Control Label */}
-      <div className="text-xs swiss-mono text-swiss-gray-600 tracking-wider">
+      <div className="text-xs font-medium text-swiss-gray-600 tracking-wider swiss-mono">
         SIZE
       </div>
       
-      {/* Swiss Grid Lines */}
+      {/* Grid Lines */}
       <div className="w-8 h-px bg-swiss-black"></div>
       
       {/* Size Controls */}
@@ -36,7 +36,7 @@ export function ImageSizeSlider({ imageSize, onSizeChange }: ImageSizeSliderProp
           onClick={() => handleSizeChange(-1)}
           disabled={imageSize <= 1}
           className={cn(
-            "w-6 h-6 border border-swiss-black flex items-center justify-center swiss-hover transition-all",
+            "w-6 h-6 border border-swiss-black flex items-center justify-center hover:bg-swiss-gray-50 transition-all",
             imageSize <= 1 
               ? "bg-swiss-gray-100 text-swiss-gray-400 cursor-not-allowed" 
               : "bg-swiss-white text-swiss-black"
@@ -51,7 +51,7 @@ export function ImageSizeSlider({ imageSize, onSizeChange }: ImageSizeSliderProp
             <div
               key={size}
               className={cn(
-                "w-1.5 h-1.5 border border-swiss-black transition-all cursor-pointer",
+                "w-1.5 h-1.5 border border-swiss-black transition-all cursor-pointer hover:border-swiss-gray-600",
                 size <= imageSize 
                   ? "bg-swiss-black" 
                   : "bg-swiss-white"
@@ -66,7 +66,7 @@ export function ImageSizeSlider({ imageSize, onSizeChange }: ImageSizeSliderProp
           onClick={() => handleSizeChange(1)}
           disabled={imageSize >= 7}
           className={cn(
-            "w-6 h-6 border border-swiss-black flex items-center justify-center swiss-hover transition-all",
+            "w-6 h-6 border border-swiss-black flex items-center justify-center hover:bg-swiss-gray-50 transition-all",
             imageSize >= 7 
               ? "bg-swiss-gray-100 text-swiss-gray-400 cursor-not-allowed" 
               : "bg-swiss-white text-swiss-black"

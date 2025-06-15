@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { InfiniteGallery } from '@/components/InfiniteGallery';
 import { ExpandedInspirationView } from '@/components/ExpandedInspirationView';
 import { ImageSizeSlider } from '@/components/ImageSizeSlider';
+import { SimilarityStatusIndicator } from '@/components/SimilarityStatusIndicator';
 import { InspirationItem } from '@/types/inspiration';
 
 export default function GalleryPage() {
@@ -44,6 +45,9 @@ export default function GalleryPage() {
             </div>
             
             <div className="flex items-center gap-4">
+              <div className="relative">
+                <SimilarityStatusIndicator />
+              </div>
               <ImageSizeSlider
                 imageSize={imageSize}
                 onSizeChange={setImageSize}
