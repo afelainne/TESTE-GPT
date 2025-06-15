@@ -5,9 +5,11 @@ import { localVectorCache } from '@/lib/localCache';
 async function getClipEmbedding(imageUrl: string): Promise<number[]> {
   console.log('🔄 Getting CLIP embedding for search image:', imageUrl);
   
-  const clipApiUrl = process.env.CLIP_API_URL!;
+  const clipApiUrl = process.env.CLIP_API_URL || 'https://macaly-clip.hf.space/run/predict';
   
   try {
+    console.log('🔍 Payload enviado para CLIP:', { data: [imageUrl] });
+    
     const response = await fetch(clipApiUrl, {
       method: 'POST',
       headers: {
@@ -16,6 +18,7 @@ async function getClipEmbedding(imageUrl: string): Promise<number[]> {
       body: JSON.stringify({
         data: [imageUrl]
       }),
+      signal: AbortSignal.timeout(30000) // 30 second timeout
     });
 
     if (!response.ok) {
@@ -29,15 +32,16 @@ async function getClipEmbedding(imageUrl: string): Promise<number[]> {
     }
 
     const result = await response.json();
+    console.log('🔍 Resposta CLIP completa:', result);
     
     if (!result || !result.data || !Array.isArray(result.data) || !result.data[0]) {
-      throw new Error('Invalid response from CLIP API');
+      throw new Error('Invalid response from CLIP API - missing data structure');
     }
     
     const embedding = result.data[0];
     
     if (!Array.isArray(embedding) || embedding.length === 0) {
-      throw new Error('Invalid embedding format from CLIP API');
+      throw new Error('Invalid embedding format from CLIP API - not a valid array');
     }
     
     console.log(`✅ Got CLIP embedding for search (${embedding.length} dimensions)`);
