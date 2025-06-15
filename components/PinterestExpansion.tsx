@@ -122,12 +122,15 @@ export function PinterestExpansion({
     try {
       console.log('🔍 Fetching CLIP-based similar images for ID:', targetItem.id);
       
-      // Use the new find-similar-by-id endpoint
-      const response = await fetch(`/api/find-similar-by-id?imageId=${encodeURIComponent(targetItem.id)}`, {
-        method: 'GET',
+      // Use the updated find-similar endpoint
+      const response = await fetch('/api/find-similar', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          imageUrl: targetItem.imageUrl
+        }),
       });
       
       if (response.ok) {
@@ -235,15 +238,7 @@ export function PinterestExpansion({
     try {
       console.log('🎨 Generating color palette for:', targetItem.title);
       
-      const response = await fetch('/api/palette', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imageUrl: targetItem.imageUrl
-        }),
-      });
+      const response = await fetch(`/api/color-palette?imageUrl=${encodeURIComponent(targetItem.imageUrl)}`);
       
       if (response.ok) {
         const data = await response.json();
