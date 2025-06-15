@@ -1,0 +1,14 @@
+{
+  "name": "unbserved-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "enrich-authors": "node scripts/enrichAuthors.js",
+    "setup-supabase": "psql $DATABASE_URL -f scripts/supabase-author-schema.sql"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "@supabase/supabase-js": "^2.38.0",
+    "dotenv": "^16.3.1"
+  }
+}
