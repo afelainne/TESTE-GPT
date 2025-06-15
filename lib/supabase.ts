@@ -10,6 +10,21 @@ console.log('🔧 Supabase Configuration Check:', {
   serviceKey: SUPABASE_SERVICE_KEY ? 'Set' : 'Missing'
 });
 
+// Utility function to ensure proper UUID format for database queries
+export function cleanId(id: string): string {
+  if (!id) return id;
+  
+  // Remove clip_vector_ prefix if present
+  const cleaned = id.replace(/^clip_vector_/, '');
+  
+  // Validate UUID format
+  if (!cleaned.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    console.warn('⚠️ Invalid UUID format:', cleaned, 'from original:', id);
+  }
+  
+  return cleaned;
+}
+
 // Cliente para uso no browser (somente leitura anônima)
 export const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
@@ -134,11 +149,13 @@ export const clipVectorOperations = {
   },
   
   updateEmbedding: async (id: string, embedding: number[]) => {
+    const cleanedId = cleanId(id);
+    
     // Get current record to preserve existing metadata
     const { data: currentRecord } = await supabaseAdmin
       .from('clip_vectors')
       .select('metadata')
-      .eq('id', id)
+      .eq('id', cleanedId)
       .single();
     
     const { data, error } = await supabaseAdmin
@@ -150,7 +167,7 @@ export const clipVectorOperations = {
           processing_status: 'processed'  // Store in metadata JSON instead
         }
       })
-      .eq('id', id)
+      .eq('id', cleanedId)
       .select()
       .single();
     
@@ -208,14 +225,13 @@ export const clipVectorOperations = {
   },
 
   getById: async (id: string) => {
-    // Remove any prefixes that might have been accidentally added
-    const cleanId = id.replace(/^clip_vector_/, '');
-    console.log('🔍 Getting vector by ID:', cleanId);
+    const cleanedId = cleanId(id);
+    console.log('🔍 Getting vector by ID:', cleanedId);
     
     const { data, error } = await supabaseAdmin
       .from('clip_vectors')
       .select('*')
-      .eq('id', cleanId)
+      .eq('id', cleanedId)
       .single();
     
     if (error) {

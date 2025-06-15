@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin, cleanId } from '@/lib/supabase';
 
 // GET /api/references - Get paginated references for infinite scroll
 export async function GET(request: NextRequest) {
@@ -21,7 +21,9 @@ export async function GET(request: NextRequest) {
     
     // Exclude the current image if specified
     if (excludeId) {
-      query = query.neq('id', excludeId);
+      const cleanExcludeId = cleanId(excludeId);
+      console.log('🔧 Cleaned excludeId:', excludeId, '->', cleanExcludeId);
+      query = query.neq('id', cleanExcludeId);
     }
     
     const { data: entries, error } = await query;
@@ -52,6 +54,11 @@ export async function GET(request: NextRequest) {
     
   } catch (error) {
     console.error('❌ References API error:', error);
+    console.error('❌ Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     
     return NextResponse.json({
       references: [],

@@ -14,17 +14,13 @@ export async function extractColorsFromImage(imageUrl: string, colorCount: numbe
     const baseColors = await extractBaseColorsFromCanvas(imageUrl, 3);
     
     // Use the new REAL color extraction API
-    const response = await fetch('/api/color-palette', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageUrl })
-    });
+    const response = await fetch(`/api/color-palette?imageUrl=${encodeURIComponent(imageUrl)}`);
     
     if (response.ok) {
       const data = await response.json();
-      if (data.success && data.colors) {
-        console.log('✅ REAL colors extracted via API:', data.colors, 'source:', data.source);
-        return data.colors.slice(0, colorCount);
+      if (data.palette && Array.isArray(data.palette)) {
+        console.log('✅ REAL colors extracted via API:', data.palette);
+        return data.palette.slice(0, colorCount);
       }
     }
     

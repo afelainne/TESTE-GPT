@@ -13,27 +13,27 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('🔧 CLIP_API_URL configured:', process.env.CLIP_API_URL);
+  
   try {
     const { imageUrl } = await request.json();
     
     if (!imageUrl) {
-      const errorResponse = NextResponse.json({ 
-        error: 'imageUrl é obrigatório' 
-      }, { status: 400 });
-      return setCorsHeaders(errorResponse);
+      console.log('❌ No imageUrl provided');
+      return setCorsHeaders(NextResponse.json({ similar: [] }));
     }
 
     // Validate image URL format
     if (!imageUrl.startsWith('http')) {
-      const errorResponse = NextResponse.json({ 
-        error: 'URL da imagem inválida' 
-      }, { status: 400 });
-      return setCorsHeaders(errorResponse);
+      console.log('❌ Invalid imageUrl format:', imageUrl);
+      return setCorsHeaders(NextResponse.json({ similar: [] }));
     }
 
+    console.log('🔍 Fetch Similar →', process.env.CLIP_API_URL, imageUrl);
     console.log('🔍 Payload enviado para CLIP:', { data: [imageUrl] });
 
-    const clipApiUrl = process.env.CLIP_API_URL || 'https://macaly-clip.hf.space/run/predict';
+    const clipApiUrl = process.env.CLIP_API_URL || 'https://macaly-clip.hf.space/api/predict';
+    console.log('🌐 Using CLIP API URL:', clipApiUrl);
     
     try {
       // Call CLIP API with proper timeout and error handling
@@ -48,83 +48,49 @@ export async function POST(request: NextRequest) {
         signal: AbortSignal.timeout(30000) // 30 second timeout
       });
 
+      console.log('🌐 CLIP Response status:', clipResponse.status);
+
       if (!clipResponse.ok) {
         console.warn(`⚠️ CLIP API unavailable (${clipResponse.status}), using fallback similarity`);
-        
-        // Generate mock similar images for demo purposes
-        const mockSimilar = generateMockSimilarImages(imageUrl);
-        
-        const fallbackResponse = NextResponse.json({
-          similar: mockSimilar,
-          total: mockSimilar.length,
-          query: imageUrl,
-          message: `CLIP service unavailable. Showing ${mockSimilar.length} similar images from database.`,
-          fallback: true
-        });
-
-        return setCorsHeaders(fallbackResponse);
+        return setCorsHeaders(NextResponse.json({ similar: [] }));
       }
 
       const clipJson = await clipResponse.json();
-      console.log('🔍 Resposta CLIP:', clipJson);
+      console.log('🔍 CLIP response:', clipJson);
 
       // Validate CLIP response structure
       if (!clipJson.data || !Array.isArray(clipJson.data) || !clipJson.data[0]) {
-        throw new Error('Invalid CLIP response structure');
+        console.log('⚠️ Invalid CLIP response structure, returning empty');
+        return setCorsHeaders(NextResponse.json({ similar: [] }));
       }
 
       // Extract and process similar images
       const similarData = clipJson.data[0];
       
       if (!Array.isArray(similarData)) {
-        throw new Error('Invalid similarity data format');
+        console.log('⚠️ CLIP data[0] is not an array, returning empty');
+        return setCorsHeaders(NextResponse.json({ similar: [] }));
       }
 
-      // Process similar images with scores
+      // Process similar images with scores - extract only URLs
       const similar = similarData
         .filter(item => item && typeof item === 'object' && item.url && typeof item.score === 'number')
         .sort((a, b) => b.score - a.score)
         .map(item => item.url)
         .slice(0, 8); // Limit to 8 images
 
-      console.log(`✅ Found ${similar.length} similar images`);
+      console.log(`✅ Found ${similar.length} similar images:`, similar);
 
-      const successResponse = NextResponse.json({
-        similar: similar,
-        total: similar.length,
-        query: imageUrl,
-        message: `Found ${similar.length} similar images`
-      });
-
-      return setCorsHeaders(successResponse);
+      return setCorsHeaders(NextResponse.json({ similar: similar }));
       
     } catch (clipError) {
       console.warn('⚠️ CLIP API failed, using fallback:', clipError);
-      
-      // Generate mock similar images for demo purposes  
-      const mockSimilar = generateMockSimilarImages(imageUrl);
-      
-      const fallbackResponse = NextResponse.json({
-        similar: mockSimilar,
-        total: mockSimilar.length,
-        query: imageUrl,
-        message: `CLIP service temporarily unavailable. Showing ${mockSimilar.length} similar images from database.`,
-        fallback: true
-      });
-
-      return setCorsHeaders(fallbackResponse);
+      return setCorsHeaders(NextResponse.json({ similar: [] }));
     }
 
   } catch (error) {
     console.error('❌ Error in find-similar API:', error);
-    
-    const errorResponse = NextResponse.json({
-      error: error instanceof Error ? error.message : 'Erro desconhecido',
-      similar: [],
-      message: 'Serviço de busca temporariamente indisponível. Tente novamente mais tarde.'
-    }, { status: 500 });
-
-    return setCorsHeaders(errorResponse);
+    return setCorsHeaders(NextResponse.json({ similar: [] }));
   }
 }
 

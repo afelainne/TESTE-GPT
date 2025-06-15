@@ -1,26 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Real color palette extraction using Vibrant.js
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const { imageUrl } = await request.json();
+    const url = request.nextUrl.searchParams.get('imageUrl');
     
-    if (!imageUrl) {
+    if (!url) {
       return NextResponse.json({ error: 'Image URL is required' }, { status: 400 });
     }
 
-    console.log('🎨 Extracting REAL color palette from:', imageUrl);
+    console.log('🎨 Extracting REAL color palette from:', url);
 
     // Extract real colors using Vibrant.js
-    const colors = await extractColorsWithVibrant(imageUrl);
+    const colors = await extractColorsWithVibrant(url);
     
     console.log('✅ REAL colors extracted with Vibrant:', colors);
 
     return NextResponse.json({
-      success: true,
-      colors: colors,
-      source: 'vibrant_extraction',
-      message: 'Real colors extracted from image using Vibrant.js'
+      palette: colors
     });
 
   } catch (error) {
@@ -30,43 +27,38 @@ export async function POST(request: NextRequest) {
     const fallbackColors = generateSmartFallbackPalette();
     
     return NextResponse.json({
-      success: true,
-      colors: fallbackColors,
-      source: 'smart_fallback',
-      note: 'Using intelligent fallback color palette'
+      palette: fallbackColors
     });
   }
 }
 
 async function extractColorsWithVibrant(imageUrl: string): Promise<string[]> {
   try {
-    // Dynamic import for Vibrant - use require for better compatibility
-    const Vibrant = require('node-vibrant');
+    // Use import for node-vibrant in serverless environment
+    const Vibrant = (await import('node-vibrant')).default;
     
+    console.log('🎨 ColorPalette → URL:', imageUrl);
     console.log('🎨 Processing image with Vibrant.js:', imageUrl);
     
     const palette = await Vibrant.from(imageUrl).getPalette();
+    console.log('🎨 Palette raw:', palette);
     
-    // Extract colors from Vibrant swatches
+    // Extract colors from Vibrant swatches - filter null values properly
     const colors: string[] = [];
     
-    // Prioritize vibrant colors first
-    if (palette.Vibrant) colors.push(palette.Vibrant.getHex());
-    if (palette.DarkVibrant) colors.push(palette.DarkVibrant.getHex());
-    if (palette.LightVibrant) colors.push(palette.LightVibrant.getHex());
-    if (palette.Muted) colors.push(palette.Muted.getHex());
-    if (palette.DarkMuted) colors.push(palette.DarkMuted.getHex());
-    if (palette.LightMuted) colors.push(palette.LightMuted.getHex());
+    // Check each swatch and add hex if it exists
+    for (const [key, swatch] of Object.entries(palette)) {
+      if (swatch && typeof swatch.getHex === 'function') {
+        colors.push(swatch.getHex());
+      }
+    }
     
-    // Filter out null values and ensure we have colors
-    const validColors = colors.filter(color => color !== null);
-    
-    if (validColors.length === 0) {
+    if (colors.length === 0) {
       throw new Error('No valid colors extracted from image');
     }
     
-    console.log('✅ Vibrant extracted colors:', validColors);
-    return validColors.slice(0, 6); // Return max 6 colors
+    console.log('✅ Vibrant extracted colors:', colors);
+    return colors.slice(0, 6); // Return max 6 colors
     
   } catch (error) {
     console.error('❌ Vibrant extraction failed:', error);

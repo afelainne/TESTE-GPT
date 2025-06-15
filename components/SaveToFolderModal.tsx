@@ -91,10 +91,26 @@ export function SaveToFolderModal({ isOpen, onClose, contentId, contentTitle }: 
 
     const isCurrentlySaved = savedFolders.has(folderId);
     
+    console.log('[SaveToFolder] folderId:', folderId, 'imageUrl:', contentId, 'userId:', currentUser.id, 'action:', isCurrentlySaved ? 'remove' : 'add');
+    
     try {
       if (isCurrentlySaved) {
         // Remove from folder
-        await kvUserStorage.removeImageFromFolder(currentUser.id, folderId, contentId);
+        const response = await fetch('/api/folders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            folderId,
+            imageUrl: contentId,
+            userId: currentUser.id,
+            action: 'remove'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to remove from folder');
+        }
+        
         setSavedFolders(prev => {
           const newSet = new Set(prev);
           newSet.delete(folderId);
@@ -108,7 +124,21 @@ export function SaveToFolderModal({ isOpen, onClose, contentId, contentTitle }: 
         console.log('📤 Removed from folder:', folderId);
       } else {
         // Add to folder
-        await kvUserStorage.addImageToFolder(currentUser.id, folderId, contentId);
+        const response = await fetch('/api/folders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            folderId,
+            imageUrl: contentId,
+            userId: currentUser.id,
+            action: 'add'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to add to folder');
+        }
+        
         setSavedFolders(prev => new Set([...Array.from(prev), folderId]));
 
         toast({

@@ -66,6 +66,7 @@ export function VisualSearch() {
       }
 
       const data = await response.json();
+      console.log('🔍 Response from find-similar API:', data);
       
       if (data.error) {
         throw new Error(data.error);
