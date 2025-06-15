@@ -88,14 +88,23 @@ export function Header({
           <div className="col-span-3 flex items-center justify-between px-6">
             <div className="text-xs swiss-mono text-swiss-gray-600">
               <span className="block">Tell us what you see —</span>
-              <a 
-                href="https://www.instagram.com/unbserved/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="font-medium hover:text-swiss-black transition-colors"
-              >
-                @unbserved
-              </a>
+              <div className="flex items-center space-x-2">
+                <a 
+                  href="https://www.instagram.com/unbserved/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-medium hover:text-swiss-black transition-colors"
+                >
+                  @unbserved
+                </a>
+                <span>•</span>
+                <a 
+                  href="/gallery"
+                  className="font-medium hover:text-swiss-black transition-colors"
+                >
+                  Gallery
+                </a>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               {isAuthenticated && currentUser ? (

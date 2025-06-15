@@ -36,33 +36,64 @@ export function ExpandedInspirationView({
   const fetchSimilarItems = async (targetItem: InspirationItem) => {
     setIsLoadingSimilar(true);
     try {
-      const response = await fetch('/api/search-similar', {
+      console.log('[fetchSimilarItems] Starting fetch for imageUrl:', targetItem.imageUrl);
+      
+      const response = await fetch('/api/find-similar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          imageUrl: targetItem.imageUrl,
-          limit: 8
+          imageUrl: targetItem.imageUrl
         }),
       });
       
+      console.log('[fetchSimilarItems] Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        setSimilarItems(data.results || []);
-        console.log('🔍 Similar items loaded:', data.results?.length);
+        console.log('[fetchSimilarItems] Response data:', data);
+        
+        if (data.similar && Array.isArray(data.similar) && data.similar.length > 0) {
+          // Transform URLs back to InspirationItem format for display
+          const similarItemsFromUrls = data.similar.map((url: string, index: number) => ({
+            id: `similar_${index}_${Date.now()}`,
+            title: `Similar Image ${index + 1}`,
+            imageUrl: url,
+            author: 'Unknown',
+            category: 'inspiration',
+            tags: [],
+            colors: [],
+            likes: 0,
+            description: 'Similar image found via CLIP',
+            platform: 'CLIP',
+            sourceUrl: url,
+            createdAt: new Date().toISOString()
+          }));
+          
+          setSimilarItems(similarItemsFromUrls);
+          console.log('🔍 Similar items loaded from CLIP API:', similarItemsFromUrls.length);
+        } else {
+          // Fallback to random items from allItems
+          const filtered = allItems.filter(i => i.id !== targetItem.id);
+          setSimilarItems(filtered.slice(0, 8));
+          console.log('🔍 Using fallback items:', filtered.length);
+        }
       } else {
         // Fallback to random items from allItems
         const filtered = allItems.filter(i => i.id !== targetItem.id);
         setSimilarItems(filtered.slice(0, 8));
+        console.log('🔍 API failed, using fallback items:', filtered.length);
       }
     } catch (error) {
-      console.error('Error fetching similar items:', error);
+      console.error('[fetchSimilarItems] Error:', error);
       // Fallback to random items
       const filtered = allItems.filter(i => i.id !== targetItem.id);
       setSimilarItems(filtered.slice(0, 8));
+      console.log('🔍 Exception, using fallback items:', filtered.length);
     } finally {
       setIsLoadingSimilar(false);
+      console.log('[fetchSimilarItems] Fetch completed');
     }
   };
 

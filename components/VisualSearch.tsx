@@ -72,15 +72,17 @@ export function VisualSearch() {
         throw new Error(data.error);
       }
 
-      // Process the results from the new API format
+      // Process the results from the CLIP API format
       const similarUrls = data.similar || [];
+      console.log('🔍 Received similar URLs from API:', similarUrls);
+      
       const processedResults = similarUrls.map((url: string, index: number) => ({
-        id: `similar_${index}`,
+        id: `similar_${index}_${Date.now()}`,
         image_url: url,
         source_url: url,
         title: `Similar Image ${index + 1}`,
-        similarity: 0.9 - (index * 0.1), // Mock similarity scores
-        metadata: { source: 'clip_search' }
+        similarity: 0.9 - (index * 0.05), // Mock similarity scores decreasing by rank
+        metadata: { source: 'clip_api' }
       }));
 
       setResults(processedResults);

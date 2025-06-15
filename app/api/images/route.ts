@@ -10,14 +10,16 @@ export async function GET(request: NextRequest) {
     
     console.log(`📖 Fetching images - page: ${page}, limit: ${limit}`);
     
-    const offset = (page - 1) * limit;
+    // Calculate range for Supabase
+    const start = (page - 1) * limit;
+    const end = start + limit - 1;
     
     // Fetch images from clip_vectors with pagination
     const { data: images, error, count } = await supabaseAdmin
       .from('clip_vectors')
       .select('id, image_url, title, author_name, created_at, source_url', { count: 'exact' })
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(start, end);
     
     if (error) {
       console.error('❌ Error fetching images:', error);
@@ -25,17 +27,17 @@ export async function GET(request: NextRequest) {
     }
     
     const totalImages = count || 0;
-    const hasMore = offset + limit < totalImages;
+    const hasMore = Boolean(images && images.length === limit);
     
-    console.log(`✅ Fetched ${images.length} images (page ${page}), hasMore: ${hasMore}`);
+    console.log(`✅ Fetched ${images?.length || 0} images (page ${page}), hasMore: ${hasMore}, total: ${totalImages}`);
     
     return NextResponse.json({
-      images: images.map(img => ({
+      images: (images || []).map(img => ({
         id: img.id,
         imageUrl: img.image_url,
-        title: img.title,
+        title: img.title || 'Untitled',
         author: img.author_name || 'Unknown',
-        sourceUrl: img.source_url,
+        sourceUrl: img.source_url || img.image_url,
         createdAt: img.created_at
       })),
       hasMore,

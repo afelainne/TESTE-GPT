@@ -122,7 +122,9 @@ export function PinterestExpansion({
     try {
       console.log('🔍 Fetching CLIP-based similar images for ID:', targetItem.id);
       
-      // Use the updated find-similar endpoint
+      // Use the updated find-similar endpoint with CLIP API
+      console.log('[PinterestExpansion] Calling find-similar API for:', targetItem.imageUrl);
+      
       const response = await fetch('/api/find-similar', {
         method: 'POST',
         headers: {
@@ -133,26 +135,31 @@ export function PinterestExpansion({
         }),
       });
       
+      console.log('[PinterestExpansion] API response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[PinterestExpansion] API response data:', data);
         
-        if (data.similar && data.similar.length > 0) {
-          // Transform CLIP results to InspirationItem format
-          const clipSimilarItems: InspirationItem[] = data.similar.map((result: any) => ({
-            id: result.id,
-            title: result.title,
-            imageUrl: result.image_url,
-            author: result.author_name || 'Unknown',
+        if (data.similar && Array.isArray(data.similar) && data.similar.length > 0) {
+          // Transform CLIP results (URLs) to InspirationItem format
+          const clipSimilarItems: InspirationItem[] = data.similar.map((url: string, index: number) => ({
+            id: `clip_similar_${index}_${Date.now()}`,
+            title: `Similar Image ${index + 1}`,
+            imageUrl: url,
+            author: 'CLIP API',
             category: 'inspiration',
             tags: [],
             colors: [],
             likes: Math.floor(Math.random() * 100),
-            description: `Similarity: ${Math.round((result.similarity || 0) * 100)}%`,
-            sourceUrl: result.source_url
+            description: 'Found via CLIP similarity',
+            sourceUrl: url,
+            platform: 'CLIP',
+            createdAt: new Date().toISOString()
           }));
           
           setSimilarItems(clipSimilarItems);
-          console.log(`✅ Loaded ${clipSimilarItems.length} real CLIP-based similar items`);
+          console.log(`✅ Loaded ${clipSimilarItems.length} CLIP-based similar items from API`);
         } else {
           console.log('⚠️ No similar items found in database, loading fallback content');
           // Load fresh content from API as fallback
