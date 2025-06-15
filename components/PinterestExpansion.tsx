@@ -544,57 +544,7 @@ export function PinterestExpansion({
         </div>
       )}
 
-      {/* Infinite Gallery - New Section with Endless Images */}
-      <div className="mt-4 bg-white border border-swiss-black p-4 lg:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs swiss-mono text-swiss-gray-600 tracking-wider">
-            INFINITE GALLERY ({otherReferences.length + 469} available)
-          </h3>
-          <div className="text-xs swiss-mono text-swiss-gray-400">
-            Scroll to load more
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 lg:gap-3">
-          {/* Show first batch of other references */}
-          {otherReferences.map((otherItem, index) => (
-            <button
-              key={`infinite-${otherItem.id}-${index}`}
-              onClick={() => handleSimilarItemClick(otherItem, index)}
-              className="aspect-square border border-swiss-gray-300 hover:border-swiss-black transition-all duration-300 overflow-hidden group"
-              title={otherItem.title}
-            >
-              <img
-                src={otherItem.imageUrl}
-                alt={otherItem.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  target.parentElement!.style.backgroundColor = '#f3f4f6';
-                  target.parentElement!.innerHTML = `<div class="flex items-center justify-center h-full text-xs text-gray-500 p-1">${otherItem.title.slice(0, 20)}</div>`;
-                }}
-              />
-            </button>
-          ))}
-        </div>
 
-        {/* Loading indicator and infinite scroll trigger */}
-        <div ref={otherLoadingRef} className="mt-6 text-center">
-          {loadingMoreOthers && (
-            <div className="flex items-center justify-center space-x-2 py-4">
-              <Loader2 className="w-4 h-4 animate-spin text-swiss-gray-400" />
-              <span className="text-xs swiss-mono text-swiss-gray-500">Loading more references...</span>
-            </div>
-          )}
-          
-          {!hasMoreOthers && otherReferences.length > 15 && (
-            <div className="py-4">
-              <span className="text-xs swiss-mono text-swiss-gray-400">No more references</span>
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Other References - Below Similar Images with Infinite Scroll */}
       {otherReferences.length > 0 && (

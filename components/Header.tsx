@@ -87,7 +87,7 @@ export function Header({
           {/* Meta Info Section */}
           <div className="col-span-3 flex items-center justify-between px-6">
             <div className="text-xs swiss-mono text-swiss-gray-600">
-              <span className="block">Tell us what you see —</span>
+              <span className="block">Follow-us</span>
               <div className="flex items-center space-x-2">
                 <a 
                   href="https://www.instagram.com/unbserved/" 
@@ -96,13 +96,6 @@ export function Header({
                   className="font-medium hover:text-swiss-black transition-colors"
                 >
                   @unbserved
-                </a>
-                <span>•</span>
-                <a 
-                  href="/gallery"
-                  className="font-medium hover:text-swiss-black transition-colors"
-                >
-                  Gallery
                 </a>
               </div>
             </div>

@@ -26,6 +26,7 @@ export default function Home() {
   const [selectedItem, setSelectedItem] = useState<InspirationItem | null>(null);
   const [interactiveMode, setInteractiveMode] = useState(false);
   const [viewMode, setViewMode] = useState<'original' | 'infinite'>('original');
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   console.log('🎯 Home: Rendering with', items.length, 'items, loading:', loading, 'error:', error, 'mounted:', mounted);
   
@@ -172,11 +173,25 @@ export default function Home() {
 
   const handleViewItem = (item: InspirationItem, index?: number) => {
     console.log('View item:', item.id, 'at index:', index);
+    // Save current scroll position
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('lastScrollY', String(window.scrollY));
+      console.log('💾 Saved scroll position:', window.scrollY);
+    }
     setSelectedItem(item);
   };
 
   const handleCloseExpanded = () => {
     setSelectedItem(null);
+    // Restore scroll position
+    if (typeof window !== 'undefined') {
+      const lastScrollY = Number(sessionStorage.getItem('lastScrollY') || 0);
+      console.log('🔄 Restoring scroll position:', lastScrollY);
+      setTimeout(() => {
+        window.scrollTo({ top: lastScrollY, behavior: 'auto' });
+        sessionStorage.removeItem('lastScrollY');
+      }, 100);
+    }
   };
 
   const handleItemSelect = (item: InspirationItem) => {
@@ -246,70 +261,6 @@ export default function Home() {
         currentUser={currentUser}
       />
       
-      {/* Visual References Collection Section */}
-      <div className="border-b border-swiss-black bg-swiss-white">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
-            {/* Left Column - Content */}
-            <div className="lg:col-span-8 space-y-4">
-              <h1 className="text-3xl lg:text-4xl font-light text-swiss-black tracking-tight swiss-title">
-                Visual References Collection
-              </h1>
-              <p className="text-base text-swiss-gray-600 font-light max-w-2xl swiss-body leading-relaxed">
-                Visual systems from awesome but unobserved designers. Scroll down to automatically 
-                discover more inspiration. Each piece is algorithmically curated for visual coherence 
-                and contemporary relevance.
-              </p>
-            </div>
-            
-            {/* Right Column - Controls */}
-            <div className="lg:col-span-4 flex items-center justify-end gap-4">
-              {/* View Mode Buttons */}
-              <div className="flex border border-swiss-black bg-swiss-white">
-                <button
-                  onClick={() => setViewMode('original')}
-                  className={`px-3 py-2 text-xs font-medium tracking-wider swiss-mono transition-colors ${
-                    viewMode === 'original' 
-                      ? 'bg-swiss-black text-swiss-white' 
-                      : 'bg-swiss-white text-swiss-black hover:bg-swiss-gray-50'
-                  }`}
-                >
-                  GRID
-                </button>
-                <button
-                  onClick={() => setViewMode('infinite')}
-                  className={`px-3 py-2 text-xs font-medium tracking-wider swiss-mono border-l border-swiss-black transition-colors ${
-                    viewMode === 'infinite' 
-                      ? 'bg-swiss-black text-swiss-white' 
-                      : 'bg-swiss-white text-swiss-black hover:bg-swiss-gray-50'
-                  }`}
-                >
-                  INFINITE
-                </button>
-              </div>
-              
-              {/* Interactive Button */}
-              <button
-                onClick={() => setInteractiveMode(!interactiveMode)}
-                className={`px-3 py-2 text-xs font-medium tracking-wider border border-swiss-black swiss-mono transition-colors ${
-                  interactiveMode 
-                    ? 'bg-swiss-black text-swiss-white' 
-                    : 'bg-swiss-white text-swiss-black hover:bg-swiss-gray-50'
-                }`}
-              >
-                INTERACTIVE
-              </button>
-              
-              {/* Size Control */}
-              <ImageSizeSlider
-                imageSize={imageSize}
-                onSizeChange={setImageSize}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto">
         {selectedItem ? (
@@ -384,12 +335,7 @@ export default function Home() {
         )}
       </div>
       
-      {/* Debug info */}
-      <div className="fixed bottom-4 right-4 bg-black text-white p-2 text-xs font-mono opacity-75">
-        Items: {items.length} | Filtered: {filteredItems.length} | Loading: {loading ? 'Yes' : 'No'} | Mode: {viewMode}
-      </div>
-      
-      {process.env.NODE_ENV === 'development' && <EnvDebugger />}
+
     </div>
   );
 }

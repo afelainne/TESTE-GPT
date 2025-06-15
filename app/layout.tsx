@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "UNBSERVED - PLATAFORMA DE INSPIRAÇÃO PARA DESIGNER INCRÍVEIS",
+  title: "Unbserved _ Visual References Collection",
   description: "Descubra e compartilhe inspirações visuais. Uma curadoria de design, tipografia, branding e muito mais.",
   viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",

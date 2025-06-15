@@ -56,6 +56,11 @@ export function InspirationGrid({
 
   const handleViewItem = (item: InspirationItem, clickedIndex?: number) => {
     console.log('🖼️ Expanding in-place for item:', item.id);
+    // Save scroll position before expanding
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('lastScrollY', String(window.scrollY));
+      console.log('💾 Grid: Saved scroll position:', window.scrollY);
+    }
     setExpandedItem(item);
     setExpandedIndex(clickedIndex ?? 0);
   };
@@ -64,6 +69,15 @@ export function InspirationGrid({
     console.log('Closing expanded view');
     setExpandedItem(null);
     setExpandedIndex(null);
+    // Restore scroll position
+    if (typeof window !== 'undefined') {
+      const lastScrollY = Number(sessionStorage.getItem('lastScrollY') || 0);
+      console.log('🔄 Grid: Restoring scroll position:', lastScrollY);
+      setTimeout(() => {
+        window.scrollTo({ top: lastScrollY, behavior: 'auto' });
+        sessionStorage.removeItem('lastScrollY');
+      }, 100);
+    }
   };
 
   const handleCloseModal = () => {

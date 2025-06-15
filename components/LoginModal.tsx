@@ -102,12 +102,6 @@ export function LoginModal({
               <p className="text-xs swiss-mono text-swiss-gray-600">{message}</p>
             </div>
           </div>
-          <button
-            onClick={handleClose}
-            className="w-8 h-8 border border-swiss-black flex items-center justify-center hover:bg-swiss-black hover:text-swiss-white transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
 
         {/* Content */}
