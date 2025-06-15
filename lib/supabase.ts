@@ -52,6 +52,7 @@ export const supabase = supabaseAdmin;
 
 // Legacy clipVectorOperations for backward compatibility
 export const clipVectorOperations = {
+  supabaseAdmin, // Expose supabaseAdmin for direct access
   findSimilar: async (embedding: number[], limit = 10) => {
     console.log('🔍 Searching similar vectors with match_vectors function...');
     const { data, error } = await supabaseAdmin
